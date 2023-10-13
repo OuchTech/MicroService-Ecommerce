@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Produits Microservice</title>
+</head>
+
+<body>
+
+    <!-- Formulaire pour ajouter un produit -->
+    <h2>Ajouter un produit</h2>
+    <form id="produitForm">
+        <label for="nom">Nom:</label>
+        <input type="text" id="nom" name="nom">
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description">
+        <label for="prix">Prix:</label>
+        <input type="number" id="prix" name="prix">
+        <button type="submit">Ajouter</button>
+    </form>
+
+    <hr>
+
+    <!-- Liste des produits -->
+    <h2>Liste des produits</h2>
+    <ul id="produitList"></ul>
+
+    <script>
+        document.getElementById('produitForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const nom = document.getElementById('nom').value;
+            const description = document.getElementById('description').value;
+            const prix = document.getElementById('prix').value;
+
+            try {
+                const response = await fetch('http://localhost:3000/produits', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nom,
+                        description,
+                        prix
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.status === 201) {
+                    // Ajouter le produit à la liste
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${data.nom} - ${data.description} - ${data.prix}`;
+                    document.getElementById('produitList').appendChild(listItem);
+                } else {
+                    alert('Erreur: ' + data.message);
+                }
+            } catch (error) {
+                alert('Erreur lors de l\'ajout du produit: ' + error.message);
+            }
+        });
+
+        // Récupérer la liste des produits au chargement de la page
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('http://localhost:3000/produits');
+                const produits = await response.json();
+
+                produits.forEach(produit => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${produit.nom} - ${produit.description} - ${produit.prix}`;
+                    document.getElementById('produitList').appendChild(listItem);
+                });
+            } catch (error) {
+                alert('Erreur lors de la récupération des produits: ' + error.message);
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>
